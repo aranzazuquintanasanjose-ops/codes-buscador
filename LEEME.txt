@@ -1,0 +1,23 @@
+CODES · Herramientas de búsqueda (buscador.codescorpus.com)
+============================================================
+
+Contenido
+- morfosintactico.html .. buscador morfosintáctico
+- index.html ............ concordancias y asistente
+- data/ ................. datos que usa index.html
+
+Publicarlo gratis con GitHub Pages
+1. Crea una cuenta en github.com (si no la tienes).
+2. Pulsa «New repository». Nombre: codes-buscador. Público. Crear.
+3. En el repositorio: «Add file» > «Upload files». Arrastra TODO el contenido de esta carpeta
+   (los dos .html, LEEME.txt y la carpeta data). Pulsa «Commit changes».
+4. Settings > Pages > Source: «Deploy from a branch» > rama «main», carpeta «/ (root)» > Save.
+   En unos minutos estará en https://TU-USUARIO.github.io/codes-buscador/
+5. Dominio propio: en Settings > Pages > Custom domain escribe  buscador.codescorpus.com  y guarda.
+6. En WordPress.com: Mis sitios > Dominios > codescorpus.com > Registros DNS > Añadir registro
+   Tipo: CNAME · Nombre: buscador · Valor: TU-USUARIO.github.io
+7. Cuando GitHub marque el dominio como verificado, activa «Enforce HTTPS».
+
+Direcciones finales
+- https://buscador.codescorpus.com/morfosintactico.html
+- https://buscador.codescorpus.com/#concordancias

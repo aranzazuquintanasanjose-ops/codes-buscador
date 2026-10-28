@@ -1,0 +1,560 @@
+<title>Corpus CODES</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra superior con pestañas; cada vista es una mesa de trabajo de ancho limitado; la ocurrencia descortés se marca como un subrayado de anotador */
+:root{
+  --bg:#F4F6F9; --surface:#FFFFFF; --sunk:#E9EDF3; --line:#D3DAE4;
+  --fg:#17202B; --muted:#5A6676; --accent:#1E5E8C; --accent-ink:#FFFFFF;
+  --mark:#F3C24E; --mark-soft:#FBEBC2; --mark-ink:#3A2A00;
+  --bubble-me:#DCEBF6; --bubble-other:#FFFFFF; --lock:#8A4B12; --lock-bg:#F7E6D6;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161D; --surface:#19202A; --sunk:#0D1117; --line:#2B3542;
+  --fg:#E5EAF1; --muted:#98A4B5; --accent:#7DB4DE; --accent-ink:#0D1A26;
+  --mark:#E2A93C; --mark-soft:#3D3018; --mark-ink:#FFF3D6;
+  --bubble-me:#1F3447; --bubble-other:#1E2631; --lock:#F0B585; --lock-bg:#3A2614; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161D; --surface:#19202A; --sunk:#0D1117; --line:#2B3542;
+  --fg:#E5EAF1; --muted:#98A4B5; --accent:#7DB4DE; --accent-ink:#0D1A26;
+  --mark:#E2A93C; --mark-soft:#3D3018; --mark-ink:#FFF3D6;
+  --bubble-me:#1F3447; --bubble-other:#1E2631; --lock:#F0B585; --lock-bg:#3A2614; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding-block:12px}
+.brand{display:flex;align-items:baseline;gap:10px;text-decoration:none;color:var(--fg)}
+.brand b{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:.02em}
+.brand span{color:var(--muted);font-size:13px}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav.tabs a{padding:7px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:500}
+nav.tabs a[aria-current="page"]{background:var(--fg);color:var(--bg)}
+nav.tabs a:hover{color:var(--fg)}
+
+main{padding-block:24px 96px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(26px,3.4vw,36px)}
+h2{font-size:22px}
+h3{font-size:16px}
+.lede{color:var(--muted);max-width:68ch;margin:8px 0 0}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mono{font-family:var(--f-mono);font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+.view{display:grid;gap:20px}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.pad{padding:16px}
+
+/* Map */
+.mapgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.mapgrid{grid-template-columns:1fr}}
+.mapbox{padding:8px}
+.mapbox svg{display:block;width:100%;height:auto}
+.prov{fill:var(--sunk);stroke:var(--line);stroke-width:1.2}
+.prov.has{cursor:pointer;stroke:var(--surface);stroke-width:1.6}
+.prov.has:hover,.prov.has.sel{stroke:var(--fg);stroke-width:2.2}
+.bub{fill:var(--mark);stroke:var(--fg);stroke-width:1.2;cursor:pointer}
+.bublbl{font:600 22px var(--f-body);fill:var(--fg);pointer-events:none;paint-order:stroke;stroke:var(--surface);stroke-width:5px}
+.zones{display:grid;gap:6px}
+.zone{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid transparent;background:none;text-align:left;cursor:pointer;width:100%}
+.zone:hover,.zone.sel{border-color:var(--line);background:var(--sunk)}
+.zone .bar{grid-column:1/-1;height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.zone .bar i{display:block;height:100%;background:var(--accent)}
+.zone small{color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:13px;padding:4px 8px 8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+
+/* Filters */
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+.field{display:grid;gap:4px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+select,input[type=text],input[type=search]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500;text-decoration:none;color:var(--fg);white-space:nowrap}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{padding:4px 10px;font-size:13px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+.count{font-weight:600}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:var(--sunk);font-size:13px;border:0;cursor:pointer}
+.chip b{font-weight:600}
+
+/* Table */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface);position:sticky;top:0}
+tbody tr:hover{background:var(--sunk)}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.pill.open{background:var(--sunk);color:var(--muted)}
+.pill.lock{background:var(--lock-bg);color:var(--lock)}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:12px 16px;flex-wrap:wrap}
+
+/* Sample */
+.samplegrid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.samplegrid{grid-template-columns:1fr}}
+.chat{display:grid;gap:8px;padding:16px;background:var(--sunk);border-radius:var(--r)}
+.bubble{max-width:85%;padding:8px 12px;border-radius:12px;background:var(--bubble-other);border:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.bubble.me{justify-self:end;background:var(--bubble-me)}
+.bubble .who{display:block;font-size:12px;font-weight:600;color:var(--accent);margin-bottom:2px}
+.bubble .ts{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-left:6px}
+.bubble.hit{background:var(--mark-soft);border-color:var(--mark);box-shadow:inset 4px 0 0 var(--mark)}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+dl.meta{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}
+dl.meta dt{color:var(--muted);font-size:13px}
+dl.meta dd{margin:0;font-weight:500}
+.cite{font-size:13px;background:var(--sunk);padding:10px 12px;border-radius:8px;overflow-wrap:anywhere}
+.notice{padding:14px 16px;border-radius:var(--r);background:var(--lock-bg);color:var(--lock)}
+.tag{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);padding:0 4px;border-radius:4px}
+
+/* Concordancer */
+.qbar{display:grid;grid-template-columns:160px minmax(0,1fr) auto;gap:10px}
+@media (max-width:640px){.qbar{grid-template-columns:1fr}}
+.examples{display:flex;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted);align-items:center}
+.examples button{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);border:0;border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--fg)}
+.kwic{width:100%;min-width:720px;font-size:14px}
+.kwic td{padding:6px 10px}
+.kwic .l{text-align:right;color:var(--muted);white-space:nowrap;overflow:hidden;max-width:300px;text-overflow:clip;direction:rtl}
+.kwic .l span{direction:ltr;unicode-bidi:plaintext}
+.kwic .k{white-space:nowrap;font-weight:600}
+.kwic .k mark{background:var(--mark);color:var(--mark-ink);padding:1px 4px;border-radius:4px}
+.kwic .r{color:var(--muted);white-space:nowrap;overflow:hidden;max-width:300px}
+.freq{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.fbar{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:2px 8px;font-size:13px;align-items:center}
+.fbar .b{grid-column:1/-1;height:5px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.fbar .b i{display:block;height:100%;background:var(--accent)}
+.help{font-size:13px;color:var(--muted)}
+.help code{font-family:var(--f-mono);font-size:12.5px;color:var(--fg);background:var(--sunk);padding:0 4px;border-radius:4px}
+details summary{cursor:pointer;font-weight:600}
+
+/* Assistant */
+.fab{position:fixed;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:999px;border:0;background:var(--fg);color:var(--bg);font-weight:600;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.assist{position:fixed;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:21;width:min(400px,calc(100vw - 32px));max-height:min(620px,calc(100vh - 140px));display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.22);overflow:hidden}
+.assist header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.assist header b{font-family:var(--f-display);font-size:17px}
+.assist .log{flex:1;overflow-y:auto;padding:14px;display:grid;gap:10px;align-content:start}
+.msg{padding:9px 12px;border-radius:12px;max-width:92%;font-size:14px;white-space:pre-line;min-width:0;overflow-wrap:anywhere}
+.msg.bot{background:var(--sunk)}
+.msg.user{justify-self:end;background:var(--accent);color:var(--accent-ink)}
+.msg .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.msg .prev{display:block;margin-top:6px;font-size:13px;padding:6px 8px;border-left:3px solid var(--mark);background:var(--surface);border-radius:4px;text-decoration:none;color:var(--fg)}
+.assist form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.assist form input{flex:1;min-width:0}
+.sugs{display:flex;gap:6px;flex-wrap:wrap}
+.sugs button{font-size:12.5px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;cursor:pointer}
+
+footer{color:var(--muted);font-size:13px;padding-block:24px;border-top:1px solid var(--line)}
+.loading{padding:60px 0;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.bubble.hit{transition:box-shadow .2s}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#mapa"><b>CODES</b><span>Corpus sobre la Descortesía</span></a>
+    <nav class="tabs" aria-label="Secciones">
+      <a href="#mapa" data-v="mapa">Mapa</a>
+      <a href="#buscar" data-v="buscar">Buscador</a>
+      <a href="#concordancias" data-v="concordancias">Concordancias</a>
+      <a href="#acerca" data-v="acerca">Cómo citar</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="app"><p class="loading">Cargando el corpus…</p></main>
+
+<footer class="wrap">CODES · Corpus sobre la Descortesía · Universidad de Cádiz. Los textos están anonimizados: nombres, lugares, enlaces y datos de contacto se sustituyen por etiquetas entre corchetes.</footer>
+
+<button class="fab" id="fab" type="button" aria-expanded="false" aria-controls="assist">Asistente</button>
+<section class="assist" id="assist" hidden aria-label="Asistente de búsqueda">
+  <header><b>Asistente</b><span class="help">Te ayudo a encontrar muestras</span><span class="spacer"></span><button class="btn small" id="closeAssist" type="button">Cerrar</button></header>
+  <div class="log" id="log" aria-live="polite"></div>
+  <form id="askForm"><input id="ask" type="text" autocomplete="off" placeholder="p. ej. insultos de mujeres de Cádiz" aria-label="Pregunta al asistente"><button class="btn primary" type="submit">Enviar</button></form>
+</section>
+
+<script>
+'use strict';
+const CONTACTO = 'https://codescorpus.com/';
+const CITA_AÑO = '2026';
+const SITE = 'https://codescorpus.com';
+const fichaWP = code => `${SITE}/${code.toLowerCase()}/`;
+let DB = null, MAPA = null;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const fmt = n => n.toLocaleString('es-ES');
+
+const POS = {NOUN:'sustantivo',VERB:'verbo',ADJ:'adjetivo',ADV:'adverbio',PRON:'pronombre',DET:'determinante',ADP:'preposición',
+  CCONJ:'conjunción coordinante',SCONJ:'conjunción subordinante',AUX:'verbo auxiliar',PROPN:'nombre propio',INTJ:'interjección',
+  NUM:'numeral',PUNCT:'puntuación',SYM:'símbolo',X:'otro',ETIQ:'etiqueta de anonimización',PART:'partícula'};
+const POS_ALIAS = Object.fromEntries(Object.entries(POS).flatMap(([k,v]) => [[norm(k),k],[norm(v),k],[norm(v.split(' ')[0]),k]]));
+POS_ALIAS['sust']='NOUN'; POS_ALIAS['adj']='ADJ'; POS_ALIAS['adv']='ADV'; POS_ALIAS['verbo']='VERB'; POS_ALIAS['conj']='CCONJ';
+
+const F = [ // filtros del buscador
+  ['conv','Conversación'],['informante','Informante'],['sexo','Sexo'],['edad','Edad'],['provincia','Procedencia'],
+  ['estudios','Nivel de estudios'],['relacion','Relación'],['acceso','Acceso']];
+const ORDER = {edad:['Menos de 30','30-60','Más de 60','Sin datos'], estudios:['Sin estudios','Primarios','Secundarios','Superiores','Sin datos']};
+const state = { filtros:{}, codigo:'', page:0, conc:{tipo:'forma', q:'', filtros:{}} };
+
+function opciones(key){
+  const c = new Map();
+  for (const s of DB.muestras) c.set(String(s[key]), (c.get(String(s[key]))||0)+1);
+  let arr = [...c.entries()];
+  if (ORDER[key]) arr.sort((a,b) => ORDER[key].indexOf(a[0]) - ORDER[key].indexOf(b[0]));
+  else if (key==='conv') arr.sort((a,b) => (parseInt(a[0].slice(1))||999) - (parseInt(b[0].slice(1))||999));
+  else if (key==='informante') arr.sort((a,b) => +a[0] - +b[0]);
+  else arr.sort((a,b) => b[1]-a[1]);
+  return arr;
+}
+const label = (key,v) => key==='conv' ? v.toUpperCase().replace('C?','Sin conversación') : key==='informante' ? (v==='0'?'Sin datos':'Informante '+v) : v;
+function pasa(s, f){ for (const k in f) if (f[k] && String(s[k]) !== f[k]) return false; return true; }
+
+/* ---------- Routing ---------- */
+function route(){
+  const h = location.hash.slice(1) || 'mapa';
+  const v = h.startsWith('muestra-') ? 'muestra' : h;
+  document.querySelectorAll('nav.tabs a').forEach(a => a.toggleAttribute('aria-current', a.dataset.v === v || (v==='muestra' && a.dataset.v==='buscar')));
+  if (a11yCurrent(v)) {}
+  const app = $('#app');
+  if (v==='mapa') vistaMapa(app);
+  else if (v==='buscar') vistaBuscar(app);
+  else if (v==='concordancias') vistaConc(app);
+  else if (v==='acerca') vistaAcerca(app);
+  else if (v==='muestra') vistaMuestra(app, h.slice(8));
+  else vistaMapa(app);
+  window.scrollTo(0,0);
+}
+function a11yCurrent(v){ document.querySelectorAll('nav.tabs a[aria-current]').forEach(a=>a.setAttribute('aria-current','page')); return true; }
+function ir(h){ if (location.hash === '#'+h) route(); else location.hash = h; }
+
+/* ---------- Mapa ---------- */
+function vistaMapa(app){
+  const porZona = new Map();
+  for (const s of DB.muestras) porZona.set(s.provincia, (porZona.get(s.provincia)||0)+1);
+  const zonas = DB.zonas.map(z => ({...z, n: porZona.get(z.zona)||0})).sort((a,b)=>b.n-a.n);
+  const max = Math.max(...zonas.map(z=>z.n));
+  const geo2zona = {}; zonas.forEach(z => z.geo.forEach(g => geo2zona[g] = z));
+  const shade = n => { const t = Math.log(n+1)/Math.log(max+1); return `color-mix(in oklab, var(--accent) ${Math.round(18+t*72)}%, var(--sunk))`; };
+  const [x0,y0,w,h] = MAPA.vb;
+  let paths = '', bubbles = '';
+  for (const p of MAPA.prov){
+    const z = geo2zona[p.n];
+    paths += `<path class="prov${z?' has':''}" d="${p.d}" ${z?`data-zona="${esc(z.zona)}" style="fill:${shade(z.n)}" tabindex="0" role="button" aria-label="${esc(z.zona)}: ${z.n} muestras"`:''}><title>${esc(p.n)}${z?` · ${z.n} muestras`:''}</title></path>`;
+  }
+  const done = new Set();
+  for (const p of MAPA.prov){
+    const z = geo2zona[p.n]; if (!z || done.has(z.zona)) continue; done.add(z.zona);
+    const pts = MAPA.prov.filter(q => z.geo.includes(q.n)).map(q=>q.c);
+    const cx = pts.reduce((a,c)=>a+c[0],0)/pts.length, cy = pts.reduce((a,c)=>a+c[1],0)/pts.length;
+    const r = 7 + 26*Math.sqrt(z.n/max);
+    bubbles += `<circle class="bub" cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" data-zona="${esc(z.zona)}"><title>${esc(z.zona)} · ${z.n} muestras</title></circle><text class="bublbl" x="${(cx+r+6).toFixed(1)}" y="${(cy+7).toFixed(1)}">${fmt(z.n)}</text>`;
+  }
+  const sinZona = DB.muestras.filter(s=>s.provincia==='Sin precisar').length;
+  app.innerHTML = `<section class="view">
+    <div><p class="eyebrow">Procedencia del emisor</p><h1>Mapa del corpus</h1>
+    <p class="lede">Cada zona marcada reúne las muestras cuyo emisor procede de esa provincia. Pulsa una zona para ver sus muestras en el buscador.</p></div>
+    <div class="mapgrid">
+      <div class="panel mapbox"><svg viewBox="${x0} ${y0} ${w} ${h}" role="img" aria-label="Mapa de España por provincias con el número de muestras">${paths}${bubbles}</svg>
+      <div class="legend"><span><i style="background:var(--sunk);border:1px solid var(--line)"></i>Sin muestras</span><span><i style="background:color-mix(in oklab, var(--accent) 30%, var(--sunk))"></i>Pocas muestras</span><span><i style="background:var(--accent)"></i>Muchas muestras</span><span>Canarias: sin muestras</span></div></div>
+      <div class="panel pad"><div class="row" style="margin-bottom:10px"><h2>Zonas</h2><span class="spacer"></span><span class="muted num">${fmt(DB.muestras.length)} muestras</span></div>
+        <div class="zones">${zonas.map(z=>`<button class="zone" type="button" data-zona="${esc(z.zona)}"><span><b>${esc(z.zona)}</b> <small>${esc(z.comunidad)}</small></span><span class="num count">${fmt(z.n)}</span><span class="bar"><i style="width:${(100*z.n/max).toFixed(1)}%"></i></span></button>`).join('')}</div>
+        ${sinZona?`<p class="help" style="margin:12px 0 0">${sinZona} muestras no tienen provincia precisa y no aparecen en el mapa.</p>`:''}
+      </div>
+    </div></section>`;
+  app.querySelectorAll('[data-zona]').forEach(el => {
+    const go = () => { state.filtros = {provincia: el.dataset.zona}; state.page = 0; ir('buscar'); };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', e => { if (e.key==='Enter' || e.key===' ') { e.preventDefault(); go(); } });
+  });
+}
+
+/* ---------- Buscador por metadatos ---------- */
+const PER = 50;
+function vistaBuscar(app){
+  app.innerHTML = `<section class="view">
+    <div><p class="eyebrow">Búsqueda por metadatos</p><h1>Buscador de muestras</h1>
+    <p class="lede">Filtra por los datos del emisor y de la conversación. El código de cada muestra indica conversación, informante emisor y número de muestra: <span class="mono">CODES-C07-I002-0003</span>.</p></div>
+    <div class="panel pad"><form id="ff" class="filters">
+      ${F.map(([k,l]) => `<div class="field"><label for="f-${k}">${l}</label><select id="f-${k}" name="${k}"><option value="">Todos</option>${opciones(k).map(([v,n])=>`<option value="${esc(v)}">${esc(label(k,v))} (${n})</option>`).join('')}</select></div>`).join('')}
+      <div class="field"><label for="f-codigo">Código</label><input id="f-codigo" type="search" placeholder="CODES-C18…" value="${esc(state.codigo)}"></div>
+      <div class="field"><button class="btn" type="button" id="reset">Quitar filtros</button></div>
+    </form></div>
+    <div class="panel"><div class="row pad" style="padding-bottom:8px"><span class="count num" id="cnt"></span><span class="chips" id="chips"></span><span class="spacer"></span><button class="btn small" type="button" id="toConc">Buscar palabras en estas muestras</button></div>
+      <div class="tablewrap"><table><thead><tr><th>Acceso</th><th>Código</th><th>Conversación</th><th>Sexo</th><th>Edad</th><th>Procedencia</th><th>Estudios</th><th>Relación</th></tr></thead><tbody id="tb"></tbody></table></div>
+      <div class="pager" id="pager"></div></div>
+  </section>`;
+  for (const [k] of F) { const el = $('#f-'+k); el.value = state.filtros[k]||''; el.addEventListener('change', () => { state.filtros[k] = el.value; state.page = 0; pintar(); }); }
+  $('#f-codigo').addEventListener('input', e => { state.codigo = e.target.value.trim(); state.page = 0; pintar(); });
+  $('#reset').addEventListener('click', () => { state.filtros = {}; state.codigo = ''; state.page = 0; vistaBuscar(app); });
+  $('#toConc').addEventListener('click', () => { state.conc.filtros = {...state.filtros}; ir('concordancias'); });
+  pintar();
+}
+function filtradas(){
+  const c = norm(state.codigo);
+  return DB.muestras.filter(s => pasa(s, state.filtros) && (!c || norm(s.codigo).includes(c)));
+}
+function pintar(){
+  const res = filtradas(), pages = Math.max(1, Math.ceil(res.length/PER));
+  state.page = Math.min(state.page, pages-1);
+  $('#cnt').textContent = `${fmt(res.length)} muestra${res.length===1?'':'s'}`;
+  $('#chips').innerHTML = F.filter(([k])=>state.filtros[k]).map(([k,l])=>`<button class="chip" type="button" data-k="${k}" aria-label="Quitar filtro ${esc(l)}">${esc(l)}: <b>${esc(label(k,state.filtros[k]))}</b> ×</button>`).join('');
+  $('#chips').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { state.filtros[b.dataset.k] = ''; $('#f-'+b.dataset.k).value=''; state.page=0; pintar(); }));
+  $('#tb').innerHTML = res.slice(state.page*PER, state.page*PER+PER).map(s => `<tr>
+    <td>${s.acceso==='Abierto' ? `<a class="btn small" href="#muestra-${s.codigo}">Ver ficha</a>` : `<a class="pill lock" href="#muestra-${s.codigo}">Restringido</a>`}</td>
+    <td class="mono"><a href="#muestra-${s.codigo}">${s.codigo}</a></td><td class="mono">${esc(label('conv',s.conv))}</td>
+    <td>${esc(s.sexo)}</td><td>${esc(s.edad)}</td><td>${esc(s.provincia)}</td><td>${esc(s.estudios)}</td><td>${esc(s.relacion)}</td></tr>`).join('')
+    || `<tr><td colspan="8" style="padding:24px;color:var(--muted)">Ninguna muestra cumple estos filtros. Quita alguno para ampliar la búsqueda.</td></tr>`;
+  $('#pager').innerHTML = pages>1 ? `<button class="btn small" type="button" id="pp" ${state.page===0?'disabled':''}>Anterior</button><span class="num">Página ${state.page+1} de ${pages}</span><button class="btn small" type="button" id="pn" ${state.page>=pages-1?'disabled':''}>Siguiente</button>` : '';
+  if (pages>1){ $('#pp').onclick = () => { state.page--; pintar(); }; $('#pn').onclick = () => { state.page++; pintar(); }; }
+}
+
+/* ---------- Ficha de muestra ---------- */
+function burbujas(text, emisor, hit){
+  const lines = String(text||'').split('\n'); const out = []; let cur = null;
+  const RX = /^(?:Participante_\d+:\s*)?‎?\s*(?:\[([^\]]*\d[^\]]*)\]\s*)?‎?\s*(Informante \d+|\[Nombre propio\]|\[Informante \d+\]):\s?(.*)$/;
+  for (const ln of lines){
+    const m = ln.match(RX);
+    if (m) { cur = {who:m[2], ts:m[1]||'', txt:[m[3]]}; out.push(cur); }
+    else if (cur) cur.txt.push(ln);
+    else { cur = {who:'', ts:'', txt:[ln]}; out.push(cur); }
+  }
+  return out.map(b => {
+    const me = b.who === 'Informante '+emisor;
+    return `<div class="bubble${me?' me':''}${hit?' hit':''}">${b.who?`<span class="who">${esc(b.who)}${b.ts?`<span class="ts">${esc(b.ts)}</span>`:''}</span>`:''}${marcarEtiquetas(b.txt.join('\n'))}</div>`;
+  }).join('');
+}
+const marcarEtiquetas = t => esc(t).replace(/\[(Nombre propio|Mención a participante|Enlace|Dirección|Lugar de trabajo|Lugar|Universidad|Teléfono|Cuenta bancaria|Correo electrónico|Archivo adjunto|No consta[^\]]*)\]|&lt;Multimedia omitido&gt;/g, m => `<span class="tag">${m}</span>`);
+function vistaMuestra(app, code){
+  const i = DB.muestras.findIndex(s => s.codigo === code);
+  if (i<0){ app.innerHTML = `<section class="view"><h1>No encontramos esa muestra</h1><p class="lede">El código <span class="mono">${esc(code)}</span> no existe en el corpus. Comprueba que esté bien escrito o vuelve al <a href="#buscar">buscador</a>.</p></section>`; return; }
+  const s = DB.muestras[i], prev = DB.muestras[i-1], next = DB.muestras[i+1];
+  const cita = `CODES. Corpus sobre la Descortesía (${CITA_AÑO}). Muestra ${s.codigo}. Universidad de Cádiz. Disponible en: ${fichaWP(s.codigo)}`;
+  const cuerpo = s.acceso==='Abierto' ? `
+    <div class="divider">Contexto previo</div>
+    <div class="chat">${s.contexto ? burbujas(s.contexto, s.informante, false) : '<p class="help">No consta intervención anterior en el registro.</p>'}</div>
+    <div class="divider">Intervención descortés</div>
+    <div class="chat">${burbujas(s.ocurrencia, s.informante, true)}</div>`
+    : `<div class="notice"><b>Muestra de acceso restringido.</b> El texto de esta muestra solo está disponible para investigadores. Puedes solicitar el acceso desde la web del proyecto: <span class="mono">${esc(CONTACTO)}</span> · <a href="${CONTACTO}" target="_blank" rel="noopener">Abrir codescorpus.com</a></div>`;
+  app.innerHTML = `<section class="view">
+    <div class="row"><a class="btn small" href="#buscar">Volver al buscador</a><span class="spacer"></span>
+      ${prev?`<a class="btn small" href="#muestra-${prev.codigo}">Anterior</a>`:''}${next?`<a class="btn small" href="#muestra-${next.codigo}">Siguiente</a>`:''}</div>
+    <div><p class="eyebrow">Ficha de muestra · ${esc(s.canal)}</p><h1 class="mono" style="font-family:var(--f-mono);font-size:clamp(20px,3vw,28px)">${s.codigo}</h1></div>
+    <div class="samplegrid">
+      <div class="panel pad" style="display:grid;gap:14px">${cuerpo}</div>
+      <aside style="display:grid;gap:16px">
+        <div class="panel pad"><h3 style="margin-bottom:10px">Emisor</h3><dl class="meta">
+          <dt>Informante</dt><dd>${s.informante?'Informante '+s.informante:'Sin datos'}</dd><dt>Sexo</dt><dd>${esc(s.sexo)}</dd><dt>Edad</dt><dd>${esc(s.edad)}</dd>
+          <dt>Procedencia</dt><dd>${esc(s.provincia)}${s.comunidad!==s.provincia&&s.comunidad!=='Sin precisar'?` (${esc(s.comunidad)})`:''}</dd><dt>Estudios</dt><dd>${esc(s.estudios)}</dd></dl></div>
+        <div class="panel pad"><h3 style="margin-bottom:10px">Receptor y situación</h3><dl class="meta">
+          <dt>Sexo receptor</dt><dd>${esc(s.sexo_receptor)}</dd><dt>Edad receptor</dt><dd>${esc(s.edad_receptor)}</dd>
+          <dt>Relación</dt><dd>${esc(s.relacion)}</dd><dt>Conversación</dt><dd class="mono">${esc(label('conv',s.conv))}</dd><dt>Canal</dt><dd>${esc(s.canal)}</dd>
+          <dt>Acceso</dt><dd><span class="pill ${s.acceso==='Abierto'?'open':'lock'}">${esc(s.acceso)}</span></dd></dl></div>
+        <div class="panel pad" style="display:grid;gap:8px"><h3>Cómo citar esta muestra</h3><div class="cite" id="cite">${esc(cita)}</div>
+          <div class="row"><button class="btn small" type="button" id="copy">Copiar cita</button><span class="help" id="copied" aria-live="polite"></span></div></div>
+        <div class="row"><a class="btn small" href="${fichaWP(s.codigo)}" target="_blank" rel="noopener">Ficha en codescorpus.com</a><button class="btn small" type="button" id="sameConv">Más de esta conversación</button><button class="btn small" type="button" id="sameInf">Más de este informante</button></div>
+      </aside></div></section>`;
+  $('#copy').onclick = () => copiar(cita, $('#cite'), $('#copied'));
+  $('#sameConv').onclick = () => { state.filtros = {conv:s.conv}; state.page=0; ir('buscar'); };
+  $('#sameInf').onclick = () => { state.filtros = {informante:String(s.informante)}; state.page=0; ir('buscar'); };
+}
+function copiar(txt, el, out){
+  const ok = () => out.textContent = 'Copiada';
+  try { navigator.clipboard.writeText(txt).then(ok, () => sel(el, out)); } catch(e){ sel(el, out); }
+}
+function sel(el, out){ const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); out.textContent = 'Texto seleccionado: cópialo con Ctrl+C'; }
+
+/* ---------- Concordancias ---------- */
+function parseQuery(tipo, q){
+  q = q.trim(); if (!q) return null;
+  const mk = (campo, val) => {
+    if (campo==='cat'){ const k = POS_ALIAS[norm(val)] || val.toUpperCase(); return t => t[2]===k; }
+    if (val==='?' ) return () => true;
+    const v = norm(val);
+    if (v.includes('*')){ const rx = new RegExp('^'+v.split('*').map(x=>x.replace(/[.+?^${}()|[\]\\]/g,'\\$&')).join('.*')+'$'); return t => rx.test(norm(campo==='lema'?t[1]:t[0])); }
+    return t => norm(campo==='lema'?t[1]:t[0]) === v;
+  };
+  if (tipo==='forma') return q.split(/\s+/).map(w => mk('forma', w));
+  if (tipo==='lema') return q.split(/\s+/).map(w => mk('lema', w));
+  if (tipo==='cat') return q.split(/\s+/).map(w => mk('cat', w));
+  // avanzada: elementos separados por espacios; cada uno puede combinar condiciones con +
+  return q.split(/\s+/).map(el => {
+    const conds = el.split('+').map(c => { const m = c.match(/^(lema|cat|forma):(.+)$/i); return m ? mk(m[1].toLowerCase(), m[2]) : mk('forma', c); });
+    return t => conds.every(f => f(t));
+  });
+}
+const tokTxt = arr => arr.map(t => t[0]==='¶' ? '/' : t[0]).join(' ').replace(/ ([,.;:!?…)»])/g,'$1').replace(/([¿¡(«]) /g,'$1');
+function buscarConc(){
+  const pat = parseQuery(state.conc.tipo, state.conc.q); if (!pat) return null;
+  const hits = [];
+  for (const s of DB.muestras){
+    if (!s.tok || !pasa(s, state.conc.filtros)) continue;
+    const T = s.tok;
+    for (let i=0;i<T.length;i++){
+      let ok = true, j = i, k = 0;
+      while (k < pat.length){ if (j>=T.length || T[j][2]==='SALTO' || !pat[k](T[j])) { ok=false; break; } j++; k++; }
+      if (ok && T[i][2] !== 'SALTO') hits.push({s, i, j});
+    }
+  }
+  return hits;
+}
+function vistaConc(app){
+  const C = state.conc;
+  const ej = [['forma','puta'],['forma','maric*'],['lema','cabrón'],['cat','INTJ'],['avanzada','cat:ADJ lema:ser'],['avanzada','qué cat:NOUN'],['avanzada','lema:hijo de puta']];
+  app.innerHTML = `<section class="view">
+    <div><p class="eyebrow">Búsqueda léxica y morfosintáctica</p><h1>Concordancias</h1>
+    <p class="lede">Busca formas, lemas o categorías gramaticales en las intervenciones descorteses del corpus. Los resultados aparecen en contexto, con un enlace a cada ficha.</p></div>
+    <div class="panel pad" style="display:grid;gap:12px">
+      <form id="cq" class="qbar">
+        <select id="ctipo" aria-label="Tipo de búsqueda"><option value="forma">Palabra</option><option value="lema">Lema</option><option value="cat">Categoría</option><option value="avanzada">Avanzada</option></select>
+        <input id="cqq" type="search" placeholder="Escribe una palabra, p. ej. puta" aria-label="Consulta" value="${esc(C.q)}">
+        <button class="btn primary" type="submit">Buscar</button>
+      </form>
+      <div class="examples">Ejemplos: ${ej.map(([t,q])=>`<button type="button" data-t="${t}" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+      <div class="filters">${['sexo','edad','provincia','estudios','relacion'].map(k=>`<div class="field"><label for="cf-${k}">${F.find(f=>f[0]===k)[1]}</label><select id="cf-${k}"><option value="">Todos</option>${opciones(k).map(([v,n])=>`<option value="${esc(v)}">${esc(v)} (${n})</option>`).join('')}</select></div>`).join('')}</div>
+      <details class="help"><summary>Cómo escribir consultas</summary>
+        <p><b>Palabra</b>: busca la forma exacta, sin distinguir mayúsculas ni tildes. El asterisco sustituye cualquier secuencia: <code>maric*</code> encuentra <i>maricón, maricona, maricones</i>. Varias palabras buscan esa secuencia.</p>
+        <p><b>Lema</b>: agrupa todas las formas de una palabra: <code>cabrón</code> encuentra <i>cabrón, cabrona, cabrones</i>.</p>
+        <p><b>Categoría</b>: busca por clase de palabra: <code>INTJ</code> o <code>interjección</code>, <code>ADJ</code> o <code>adjetivo</code>, <code>NOUN</code> o <code>sustantivo</code>, <code>VERB</code>, <code>PRON</code>…</p>
+        <p><b>Avanzada</b>: una secuencia de elementos separados por espacios. Cada elemento puede ser una palabra, <code>lema:x</code>, <code>cat:X</code>, <code>?</code> (cualquier palabra) o varias condiciones unidas con <code>+</code>: <code>lema:puto+cat:ADJ cat:NOUN</code>.</p>
+        <p>El etiquetado es automático (spaCy, modelo del español), por lo que puede haber errores, sobre todo en la escritura informal de WhatsApp.</p></details>
+    </div>
+    <div id="cres"></div></section>`;
+  $('#ctipo').value = C.tipo;
+  for (const k of ['sexo','edad','provincia','estudios','relacion']) { const el = $('#cf-'+k); el.value = C.filtros[k]||''; el.onchange = () => { C.filtros[k] = el.value; resConc(); }; }
+  $('#cq').onsubmit = e => { e.preventDefault(); C.tipo = $('#ctipo').value; C.q = $('#cqq').value; resConc(); };
+  app.querySelectorAll('.examples button').forEach(b => b.onclick = () => { C.tipo=b.dataset.t; C.q=b.dataset.q; $('#ctipo').value=C.tipo; $('#cqq').value=C.q; resConc(); });
+  resConc();
+}
+function resConc(){
+  const box = $('#cres'); const hits = buscarConc();
+  const fs = Object.entries(state.conc.filtros).filter(([,v])=>v);
+  if (!hits){ box.innerHTML = `<p class="help">Escribe una consulta o prueba uno de los ejemplos.${fs.length?` Se aplicarán los filtros: ${fs.map(([k,v])=>esc(v)).join(', ')}.`:''}</p>`; return; }
+  if (!hits.length){ box.innerHTML = `<div class="panel pad">No hay resultados para <b>${esc(state.conc.q)}</b>. Prueba sin tildes, con un asterisco (<code class="tag">palabra*</code>) o buscando por lema.</div>`; return; }
+  const muestras = new Set(hits.map(h=>h.s.codigo)).size;
+  const cnt = (f) => { const m = new Map(); hits.forEach(h => { const k = f(h); m.set(k,(m.get(k)||0)+1); }); return [...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8); };
+  const bloque = (t, arr) => { const mx = arr[0]?.[1]||1; return `<div><h3 style="margin-bottom:8px">${t}</h3>${arr.map(([k,n])=>`<div class="fbar"><span>${esc(k)}</span><span class="num" style="text-align:right">${n}</span><span class="b"><i style="width:${(100*n/mx).toFixed(0)}%"></i></span></div>`).join('')}</div>`; };
+  const MAXV = 500;
+  const rows = hits.slice(0, MAXV).map(h => {
+    const T = h.s.tok;
+    return `<tr><td class="l"><span>${esc(tokTxt(T.slice(Math.max(0,h.i-10), h.i)))}</span></td><td class="k"><mark>${esc(tokTxt(T.slice(h.i,h.j)))}</mark></td><td class="r">${esc(tokTxt(T.slice(h.j, h.j+10)))}</td><td class="mono"><a href="#muestra-${h.s.codigo}">${h.s.codigo}</a></td></tr>`;
+  }).join('');
+  box.innerHTML = `<div class="panel pad" style="display:grid;gap:16px">
+      <div class="row"><span class="count num">${fmt(hits.length)} apariciones en ${fmt(muestras)} muestras</span><span class="spacer"></span><button class="btn small" type="button" id="cpy">Copiar resultados</button><span class="help" id="cpyo" aria-live="polite"></span></div>
+      <div class="freq">${bloque('Formas encontradas', cnt(h=>tokTxt(h.s.tok.slice(h.i,h.j)).toLowerCase()))}${bloque('Sexo del emisor', cnt(h=>h.s.sexo))}${bloque('Edad del emisor', cnt(h=>h.s.edad))}${bloque('Procedencia', cnt(h=>h.s.provincia))}</div></div>
+    <div class="panel"><div class="tablewrap"><table class="kwic"><thead><tr><th style="text-align:right">Contexto izquierdo</th><th>Resultado</th><th>Contexto derecho</th><th>Muestra</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${hits.length>MAXV?`<p class="help pad">Se muestran las primeras ${MAXV} apariciones. Añade filtros para acotar.</p>`:''}</div>
+    <pre id="cpytxt" hidden></pre>`;
+  const tsv = 'codigo\tizquierda\tresultado\tderecha\tsexo\tedad\tprocedencia\n' + hits.map(h => [h.s.codigo, tokTxt(h.s.tok.slice(Math.max(0,h.i-10),h.i)), tokTxt(h.s.tok.slice(h.i,h.j)), tokTxt(h.s.tok.slice(h.j,h.j+10)), h.s.sexo, h.s.edad, h.s.provincia].join('\t')).join('\n');
+  $('#cpy').onclick = () => { const pre = $('#cpytxt'); pre.textContent = tsv; try { navigator.clipboard.writeText(tsv).then(()=>$('#cpyo').textContent='Copiado: pégalo en una hoja de cálculo', ()=>{ pre.hidden=false; sel(pre,$('#cpyo')); }); } catch(e){ pre.hidden=false; sel(pre,$('#cpyo')); } };
+}
+
+/* ---------- Acerca ---------- */
+function vistaAcerca(app){
+  const n = DB.muestras.length, conv = new Set(DB.muestras.map(s=>s.conv)).size, inf = new Set(DB.muestras.map(s=>s.informante)).size;
+  app.innerHTML = `<section class="view" style="max-width:760px">
+    <div><p class="eyebrow">Sobre el corpus</p><h1>Cómo citar CODES</h1></div>
+    <div class="panel pad" style="display:grid;gap:12px">
+      <p style="margin:0">CODES reúne <b class="num">${fmt(n)}</b> intervenciones descorteses procedentes de <b class="num">${conv}</b> conversaciones de WhatsApp, emitidas por <b class="num">${inf}</b> informantes. Cada muestra recoge la intervención, su contexto previo y los datos sociolingüísticos del emisor y del receptor.</p>
+      <h3>Cita general</h3><div class="cite">CODES. Corpus sobre la Descortesía (${CITA_AÑO}). Universidad de Cádiz. Disponible en: ${SITE}</div>
+      <h3>Anonimización</h3><p style="margin:0">Los nombres de los participantes se sustituyen por <span class="tag">Informante N</span>; otras personas, lugares, enlaces y datos de contacto, por etiquetas como <span class="tag">[Nombre propio]</span>, <span class="tag">[Lugar]</span> o <span class="tag">[Enlace]</span>.</p>
+      <h3>Acceso</h3><p style="margin:0">Las muestras de acceso abierto pueden consultarse libremente. Las de acceso restringido muestran solo sus metadatos; para consultarlas, escribe al equipo desde <a href="${CONTACTO}" target="_blank" rel="noopener">codescorpus.com</a>.</p>
+    </div></section>`;
+}
+
+/* ---------- Asistente ---------- */
+const DIC = {
+  provincia: [
+    [/c[aá]diz|gaditan/, 'Cádiz'],[/badajoz|pacense|extreme[ñn]/, 'Badajoz'],[/cantabri|c[aá]ntabr|santander/, 'Cantabria'],
+    [/melill/, 'Melilla'],[/madri/, 'Madrid'],[/mallorc|balear|palma/, 'Illes Balears (Mallorca)'],[/vasc|euskadi|bilba|donosti|vitoria/, 'País Vasco'],
+    [/m[aá]lag/, 'Málaga'],[/granad/, 'Granada']],
+  sexo: [[/\bmujer|\bchicas?\b|femenin|\bellas\b|se[ñn]oras/, 'Mujer'],[/\bhombre|\bchicos?\b|masculin|\bellos\b|se[ñn]ores|varon/, 'Hombre']],
+  edad: [[/j[oó]ven|menos de 30|menores de 30|\bjoven|adolescent|veintea/, 'Menos de 30'],[/30.?60|mediana edad|adult|treinta|cuarenta|cincuenta/, '30-60'],[/mayor(es)? de 60|m[aá]s de 60|ancian|jubilad|\bmayores\b|tercera edad/, 'Más de 60']],
+  estudios: [[/universitari|superior|carrera|licenciad|grado/, 'Superiores'],[/secundari|bachiller|eso\b/, 'Secundarios'],[/primari/, 'Primarios'],[/sin estudios/, 'Sin estudios']],
+  relacion: [[/pareja|novi[oa]s?|matrimonio/, 'Pareja'],[/amig/, 'Amistad'],[/vecin/, 'Vecinos'],[/famil|herman|padre|madre|prim[oa]/, 'Familia'],[/compa[ñn]er|trabajo|colegas/, 'Compañeros']],
+  acceso: [[/restringid/, 'Restringido'],[/abiert|libre/, 'Abierto']],
+};
+const STOP = new Set('de la el los las un una unos unas que con en y o a por para del al mi me muestras muestra ejemplos ejemplo busca buscar quiero dame ver ense[ñn]a palabra palabras dicen digan diga dice contenga contengan aparezca aparece usan usen usa uso hay cuantas cuántas cuantos cuántos insultos insulto descortesia descortesía mujeres hombres jovenes jóvenes mayores'.split(' '));
+function entender(q){
+  const t = norm(q), f = {}; let palabra = null, tipo = 'forma';
+  for (const [k, reglas] of Object.entries(DIC)) for (const [rx, v] of reglas) if (rx.test(t)) { if (!f[k]) f[k] = v; }
+  const mc = t.match(/\bc(?:onversaci[oó]n)?\s?(\d{1,2})\b/); if (mc && /convers|\bc\d/.test(t)) f.conv = 'c'+parseInt(mc[1]);
+  const mi = t.match(/informante\s?(\d{1,3})/); if (mi) f.informante = String(parseInt(mi[1]));
+  const code = q.match(/CODES-C\d+-I\d+-\d+/i);
+  const mq = q.match(/["“«']([^"”»']+)["”»']/);
+  const mp = t.match(/(?:palabra|lema|forma|t[eé]rmino|insulto|expresi[oó]n|dicen?|digan?|usan?|usen?|contengan?|aparezca|aparece)\s+(?:la palabra\s+|el insulto\s+|el lema\s+)?([a-zñ*]+(?:\s[a-zñ*]+)?)/);
+  if (mq) palabra = mq[1].trim();
+  else if (mp && !STOP.has(mp[1].split(' ')[0])) palabra = mp[1].split(' ').filter(w=>!STOP.has(w)).join(' ') || null;
+  if (palabra && /\blema\b|todas las formas|cualquier forma/.test(t)) tipo = 'lema';
+  const catm = t.match(/\b(interjecciones|adjetivos|sustantivos|verbos|pronombres|adverbios)\b/);
+  if (!palabra && catm) { palabra = {interjecciones:'INTJ',adjetivos:'ADJ',sustantivos:'NOUN',verbos:'VERB',pronombres:'PRON',adverbios:'ADV'}[catm[1]]; tipo = 'cat'; }
+  return {f, palabra, tipo, code: code && code[0].toUpperCase(), saludo: /^(hola|buenas|hey|ayuda|help|qu[eé] puedes)/.test(t), total: /cu[aá]nt[oa]s|total|tama[ñn]o/.test(t)};
+}
+function bot(html, acts = []){
+  const d = document.createElement('div'); d.className = 'msg bot'; d.innerHTML = html;
+  if (acts.length){ const a = document.createElement('div'); a.className = 'acts'; acts.forEach(([txt, fn]) => { const b = document.createElement('button'); b.className = 'btn small'; b.type='button'; b.textContent = txt; b.onclick = fn; a.appendChild(b); }); d.appendChild(a); }
+  $('#log').appendChild(d); $('#log').scrollTop = 1e9;
+}
+function user(t){ const d = document.createElement('div'); d.className = 'msg user'; d.textContent = t; $('#log').appendChild(d); }
+function responder(q){
+  const r = entender(q);
+  if (r.code){ const s = DB.muestras.find(x=>x.codigo===r.code); if (s) return bot(`Aquí tienes la ficha de <span class="mono">${s.codigo}</span>.`, [['Abrir ficha', ()=>ir('muestra-'+s.codigo)]]); return bot(`No encuentro la muestra <span class="mono">${esc(r.code)}</span>. Revisa el código: tiene la forma CODES-C07-I002-0003.`); }
+  const fk = Object.keys(r.f);
+  if (r.saludo && !fk.length && !r.palabra) return bot(`Hola. Puedo buscar muestras por procedencia, sexo, edad, estudios, relación o conversación, y también palabras concretas. Prueba con alguna de estas preguntas:`, sugerencias());
+  if (!fk.length && !r.palabra){
+    if (r.total) return bot(`El corpus tiene <b>${fmt(DB.muestras.length)}</b> muestras de ${new Set(DB.muestras.map(s=>s.conv)).size} conversaciones de WhatsApp. ¿Quieres filtrarlas por algún dato?`, sugerencias());
+    return bot(`No he entendido qué buscas. Dime, por ejemplo, de dónde son los emisores, su sexo o edad, o una palabra entre comillas, como «"cabrón"».`, sugerencias());
+  }
+  const desc = fk.map(k => `${F.find(x=>x[0]===k)[1].toLowerCase()}: <b>${esc(label(k, r.f[k]))}</b>`).join(', ');
+  const base = DB.muestras.filter(s => pasa(s, r.f));
+  if (r.palabra){
+    const prevConc = {...state.conc};
+    state.conc = {tipo: r.tipo, q: r.palabra, filtros: {...r.f}};
+    const hits = buscarConc() || [];
+    const ms = [...new Map(hits.map(h=>[h.s.codigo,h])).values()];
+    const prevs = ms.slice(0,3).map(h => `<a class="prev" href="#muestra-${h.s.codigo}"><span class="mono">${h.s.codigo}</span><br>…${esc(tokTxt(h.s.tok.slice(Math.max(0,h.i-5),h.i)))} <mark>${esc(tokTxt(h.s.tok.slice(h.i,h.j)))}</mark> ${esc(tokTxt(h.s.tok.slice(h.j,h.j+5)))}…</a>`).join('');
+    if (!hits.length){ state.conc = prevConc; return bot(`No aparece <b>${esc(r.palabra)}</b>${desc?` con ${desc}`:''}. Prueba con un asterisco (${esc(r.palabra)}*) o buscando por lema.`, [['Buscar por lema', ()=>{ state.conc={tipo:'lema',q:r.palabra,filtros:{...r.f}}; ir('concordancias'); }]]); }
+    return bot(`${r.tipo==='cat'?'La categoría':'La '+(r.tipo==='lema'?'forma del lema':'palabra')} <b>${esc(r.palabra)}</b> aparece <b>${fmt(hits.length)}</b> veces en ${fmt(ms.length)} muestras${desc?` (${desc})`:''}.${prevs}`, [['Ver todas las concordancias', ()=>ir('concordancias')]]);
+  }
+  if (!base.length) return bot(`No hay muestras con ${desc}. Prueba a quitar alguna condición.`);
+  const ej = base.slice(0,3).map(s => `<a class="prev" href="#muestra-${s.codigo}"><span class="mono">${s.codigo}</span><br>${esc((s.ocurrencia||'Acceso restringido').replace(/^.*?Informante \d+:\s?/,'').slice(0,90))}…</a>`).join('');
+  bot(`He encontrado <b>${fmt(base.length)}</b> muestras con ${desc}.${ej}`, [['Ver en el buscador', ()=>{ state.filtros = {...r.f}; state.codigo=''; state.page=0; ir('buscar'); }], ['Buscar palabras en ellas', ()=>{ state.conc.filtros = {...r.f}; ir('concordancias'); }]]);
+}
+function sugerencias(){
+  return ['Muestras de mujeres de Cádiz','Hombres de Badajoz mayores de 60','¿Dónde aparece "maricón"?','Interjecciones entre parejas'].map(s => [s, () => preguntar(s)]);
+}
+function preguntar(t){ user(t); responder(t); }
+
+/* ---------- Arranque ---------- */
+async function init(){
+  try {
+    const [a, b] = await Promise.all([fetch('data/corpus.json').then(r => { if(!r.ok) throw new Error(r.status); return r.json(); }), fetch('data/mapa.json').then(r => r.json())]);
+    DB = a; MAPA = b;
+  } catch (e) {
+    $('#app').innerHTML = `<p class="loading">No se pudieron cargar los datos del corpus. Recarga la página; si el problema sigue, comprueba que la carpeta <span class="mono">data</span> esté junto a esta página.</p>`; return;
+  }
+  window.addEventListener('hashchange', route);
+  route();
+  const fab = $('#fab'), box = $('#assist');
+  const toggle = open => { box.hidden = !open; fab.setAttribute('aria-expanded', open); fab.textContent = open ? 'Cerrar asistente' : 'Asistente'; if (open) $('#ask').focus(); };
+  fab.onclick = () => toggle(box.hidden);
+  $('#closeAssist').onclick = () => toggle(false);
+  bot(`Hola. Soy el asistente de CODES. Dime qué muestras buscas, por ejemplo por procedencia, sexo, edad o una palabra concreta.`, sugerencias());
+  $('#askForm').onsubmit = e => { e.preventDefault(); const v = $('#ask').value.trim(); if (!v) return; $('#ask').value=''; preguntar(v); };
+}
+init();
+</script>
